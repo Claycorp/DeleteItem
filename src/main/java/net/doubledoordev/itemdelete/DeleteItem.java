@@ -45,6 +45,7 @@ public class DeleteItem
         if (ItemdeleteConfig.GENERAL.isItOn.get())
         {
             AbstractContainerMenu container = event.getContainer();
+            System.out.println(container);
             for (ItemStack itemStack : container.getItems())
             {
                 String itemName = itemStack.getItem().getRegistryName().toString();
@@ -54,8 +55,18 @@ public class DeleteItem
                     HitResult hitResult = playerEntity.pick(playerEntity.getAttributeValue(ForgeMod.REACH_DISTANCE.get()), 0, false);
                     BlockPos blockPos = new BlockPos(hitResult.getLocation());
 
+                    String containerName;
+                    try
+                    {
+                        containerName = container.getType().getRegistryName().toString();
+                    }
+                    catch (UnsupportedOperationException e)
+                    {
+                        containerName = "Unknown Container/Player Inventory";
+                    }
+
                     LOGGER.info("Delete Item has removed ItemStack: " + itemName + "(x " + itemStack.getCount() + ") from the game! Inside container: \"" +
-                            container.getType().getRegistryName() + "\" at " + blockPos);
+                            containerName + "\" at " + blockPos);
 
                     itemStack.setCount(0);
                 }
@@ -84,9 +95,10 @@ public class DeleteItem
                 if (itemEntity.getThrower() != null)
                     playerName = event.getWorld().getPlayerByUUID(itemEntity.getThrower()).getDisplayName().getString();
 
-                entity.remove(Entity.RemovalReason.DISCARDED);
                 LOGGER.info("Delete Item has removed ItemStack: " + itemName + "(x " + itemEntity.getItem().getCount() + ") from the game! Thrown by: \"" +
                         playerName + "\" at " + itemEntity.getOnPos());
+
+                event.setCanceled(true);
             }
         }
     }
